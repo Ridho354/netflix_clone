@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
 
-const TMDB_API_KEY = '291559e9606687b9953ad4441693ca0f';
+const TMDB_API_KEY = '';
 const MovieHomeScreen = ({ navigation }) => {
   const [genres, setGenres] = useState([]);
   const [bannerMovie, setBannerMovie] = useState(null);
