@@ -16,5 +16,34 @@
       "password": "password"
     }
   ],
-  "cart": []
+  "cart": [
+    {
+      "id": "902e",
+      "movieId": 558449,
+      "moviePoster": "/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg",
+      "movieTitle": "Gladiator II",
+      "movieOverview": "Years after witnessing the death of the revered hero Maximus at the hands of his uncle, Lucius is forced to enter the Colosseum after his home is conquered by the tyrannical Emperors who now lead Rome with an iron fist. With rage in his heart and the future of the Empire at stake, Lucius must look to his past to find strength and honor to return the glory of Rome to its people.",
+      "quantity": 1,
+      "price": 20000,
+      "qty": null
+    },
+    {
+      "id": "85a2",
+      "movieId": 1182387,
+      "moviePoster": "/pnXLFioDeftqjlCVlRmXvIdMsdP.jpg",
+      "movieTitle": "Armor",
+      "movieOverview": "Armored truck security guard James Brody is working with his son Casey transporting millions of dollars between banks when a team of thieves led by Rook orchestrate a takeover of their truck to seize the riches. Following a violent car chase, Rook soon has the armored truck surrounded and James and Casey find themselves cornered onto a decrepit bridge.",
+      "quantity": 1,
+      "price": 20000
+    },
+    {
+      "id": "05de",
+      "movieId": 762509,
+      "moviePoster": "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg",
+      "movieTitle": "Mufasa: The Lion King",
+      "movieOverview": "Mufasa, a cub lost and alone, meets a sympathetic lion named Taka, the heir to a royal bloodline. The chance meeting sets in motion an expansive journey of a group of misfits searching for their destiny.",
+      "quantity": 2,
+      "price": 20000
+    }
+  ]
 }

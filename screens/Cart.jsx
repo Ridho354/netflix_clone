@@ -1,12 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, RefreshControl, Button, ImageBackground } from 'react-native';
 import {connectAxios} from '../lib/axios';
+import midtransClient from 'midtrans-client';
 
 const Cart = () => {
   const [movies, setMovies] = useState([]);
   const [empty, setEmpty] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  const snap = new midtransClient.Snap({
+    isProduction : false,
+    serverKey : ''
+  });
+
+  const dataCheckout = {
+    "transaction_details": {
+      "order_id": "test-movieApp-1234567",
+      "gross_amount": totalPrice
+    },
+  };
+
+  const Checkout = () => {
+    const totalPrice = movies.reduce((total, item) => total + item.price * item.quantity, 0);
+    setTotalPrice(totalPrice);
+    console.log("Checkout Rp " + totalPrice);
+    snap.createTransaction(dataCheckout).then((transaction)=>{
+      const transactionToken = transaction.token;
+      console.log('transactionToken:',transactionToken);
+      console.log('https://app.sandbox.midtrans.com/snap/v2/vtweb/'+transactionToken);
+    })
+  }
+
+  const coreApi = new midtransClient.CoreApi({
+    isProduction: false,
+    serverKey: '',
+    clientKey: ''
+});
+
+  const checkTransactionStatus = async()  => {
+    console.log('Checking transaction status...');
+    try {
+        const transactionStatus = await coreApi.transaction.status('test-movieApp-1234567');
+        console.log('Transaction status:', transactionStatus.transaction_status);
+    } catch (error) {
+        console.error('Error checking transaction:', error);
+        return {
+            success: false,
+            message: error.message,
+            data: null
+        };
+    }
+  };
   
   const fetchMovies = async () => {
     console.log("Fetching movies...");
@@ -128,7 +174,10 @@ const Cart = () => {
         }
         />
       <View style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>Checkout</Text>
+        <Text style={styles.buttonCheckout} onPress={Checkout}>Checkout Rp {movies.reduce((total, item) => total + item.price * item.quantity, 0)}</Text>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Text style={styles.buttonCheck} onPress={checkTransactionStatus}>Check Status</Text>
       </View>
     </View>
         </ImageBackground>
@@ -215,10 +264,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     backgroundColor: '#007bff',
-    padding: 10,
     borderRadius: 5,
+    padding: 10,
     alignItems: 'center',
-    margin: 10,
+    margin: 5,
   },
   buttonText: {
     color: '#fff',
@@ -231,7 +280,17 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     margin: 10,
-  }
+  },
+  buttonCheckout: {
+    alignItems: 'center',
+    padding: 3,
+    color: '#fff',
+  },
+  buttonCheck: {
+    alignItems: 'center',
+    padding: 3,
+    color: '#fff',
+  },
 });
 
 export default Cart;
