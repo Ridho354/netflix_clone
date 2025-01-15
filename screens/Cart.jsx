@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, RefreshControl, Button, ImageBackground } from 'react-native';
 import {connectAxios} from '../lib/axios';
 import midtransClient from 'midtrans-client';
+import {MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY} from '@env';
 
 const Cart = () => {
   const [movies, setMovies] = useState([]);
@@ -9,20 +10,23 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [orderId, setOrderId] = useState('');
 
   const snap = new midtransClient.Snap({
     isProduction : false,
-    serverKey : ''
+    serverKey : process.env.SERVER_KEY,
   });
 
   const dataCheckout = {
     "transaction_details": {
-      "order_id": "test-movieApp-1234567",
+      "order_id": "test-movieApp-" + orderId,
       "gross_amount": totalPrice
     },
   };
 
   const Checkout = () => {
+    setOrderId(Date.now());
+    console.log("Checkout order id: test-movieApp-" + orderId);
     const totalPrice = movies.reduce((total, item) => total + item.price * item.quantity, 0);
     setTotalPrice(totalPrice);
     console.log("Checkout Rp " + totalPrice);
@@ -30,19 +34,24 @@ const Cart = () => {
       const transactionToken = transaction.token;
       console.log('transactionToken:',transactionToken);
       console.log('https://app.sandbox.midtrans.com/snap/v2/vtweb/'+transactionToken);
+      const url = 'https://app.sandbox.midtrans.com/snap/v2/vtweb/'+transactionToken;
+      redirect(url);
     })
+  }
+  const redirect = async(url) => {
+    await Linking.openURL(url);
   }
 
   const coreApi = new midtransClient.CoreApi({
     isProduction: false,
-    serverKey: '',
-    clientKey: ''
+    serverKey: MIDTRANS_SERVER_KEY,
+    clientKey: MIDTRANS_CLIENT_KEY
 });
 
   const checkTransactionStatus = async()  => {
     console.log('Checking transaction status...');
     try {
-        const transactionStatus = await coreApi.transaction.status('test-movieApp-1234567');
+        const transactionStatus = await coreApi.transaction.status('test-movieApp-' + orderId);
         console.log('Transaction status:', transactionStatus.transaction_status);
     } catch (error) {
         console.error('Error checking transaction:', error);
@@ -67,11 +76,12 @@ const Cart = () => {
       console.error('Error fetching cart:', error);
     }
 
-    if (movies.length > 0) {
-      setEmpty(false);
-      console.log("Show cart");
-    }
     console.log(movies.length);
+    if (movies.length === 0) {
+      setEmpty(false);
+      console.log("Empty");
+    }
+    return;
   };
 
   const onRefresh = async () => {
@@ -81,8 +91,8 @@ const Cart = () => {
   };
   
   useEffect(() => {
+    // onRefresh();
     fetchMovies();
-    onRefresh();
   }, []);
   
   const handleDelete = async (id) => {

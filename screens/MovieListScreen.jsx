@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity, ActivityIndicator, ImageBackground } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { TMDB_API_KEY } from '@env'
 
-const TMDB_API_KEY = '291559e9606687b9953ad4441693ca0f';
 const MovieHomeScreen = ({ navigation }) => {
   const [genres, setGenres] = useState([]);
   const [bannerMovie, setBannerMovie] = useState(null);
@@ -15,6 +15,7 @@ const MovieHomeScreen = ({ navigation }) => {
   }, []);
 
   const fetchGenresAndMovies = async () => {
+    console.log("API: " + TMDB_API_KEY);
     try {
       const genreResponse = await fetch(
         `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API_KEY}&language=en-US`
@@ -90,36 +91,41 @@ const MovieHomeScreen = ({ navigation }) => {
 
   return (
     <ImageBackground source={require('../assets/bg.jpg')} resizeMode="cover" style={styles.container}>
-      <ScrollView style={styles.content}>
-        <View style={styles.logoPlaceholder}>
-          <Image
-            style={styles.logo}
-            source={require('../assets/Netflix.png')}
-          />
-        </View>
-      <Text style={styles.HeaderTitle}>Popular Movies</Text>
-      <View style={styles.header}>
-      </View>
-        {bannerMovie && (
-          <TouchableOpacity
-            style={styles.bannerContainer}
-            onPress={() => changeBannerMovie()}
-          >
-            <Image
-              style={styles.bannerImage}
-              source={{ uri: `https://image.tmdb.org/t/p/w500${bannerMovie.backdrop_path}` }}
-            />
-            <Text style={styles.bannerTitle}>{bannerMovie.title}</Text>
-          </TouchableOpacity>
-        )}
+     
 
+      <View style={styles.content}>
         <FlatList
           data={genres}
           keyExtractor={(genre) => genre.id.toString()}
           renderItem={renderGenreRow}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={() => (
+            <>
+            <View style={styles.logoPlaceholder}>
+              <Image
+                style={styles.logo}
+                source={require('../assets/Netflix.png')}
+                />
+            </View>
+          <Text style={styles.HeaderTitle}>Popular Movies</Text>
+          <View style={styles.header}>
+          </View>
+            {bannerMovie && (
+              <TouchableOpacity
+                style={styles.bannerContainer}
+                onPress={() => changeBannerMovie()}
+              >
+                <Image
+                  style={styles.bannerImage}
+                  source={{ uri: `https://image.tmdb.org/t/p/w500${bannerMovie.backdrop_path}` }}
+                />
+                <Text style={styles.bannerTitle}>{bannerMovie.title}</Text>
+              </TouchableOpacity>
+            )}
+                </>
+          )}
           />
-      </ScrollView>
+          </View>
     </ImageBackground>
   );
 };

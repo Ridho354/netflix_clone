@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,69 +11,39 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { connectAxios } from '../lib/axios';
-import LottieView from 'lottie-react-native';
 
 const Login = ({ navigation }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-    const checkLoggedInUser = async () => {
-        const loggedInUser = await AsyncStorage.getItem("loggedInUser");
-        console.log("LoggedInUser:  " + loggedInUser);
-        if (loggedInUser) {
-            console.log("redirecting to home");
-            navigation.navigate("Home");
-        }
-    };
-
-    const splashAnimation = async () => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-    };
-
-    useEffect(() => {
-      splashAnimation();
-      checkLoggedInUser();
-    }, []);
-
-    if (loading) {
-      return (
-        <View style={styles.animationContainer}>
-        <LottieView
-          autoPlay
-          style={{
-            width: 600,
-            height: 300,
-            backgroundColor: '#ffffff00',
-          }}
-          source={require('../assets/NetflixAnimation.json')}
-        />
-        </View>
-      );
-    }
   
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     const axiosInstance = await connectAxios();
 
     try {
       const response = await axiosInstance.get('/users', {});
       console.log(response.data);
-      const user = response.data.find(
-        (user) => user.username === username && user.password === password
+      const emailrespose = response.data.find(
+        (user) => user.email === email
       );
 
-      if (!user) {
-        setError('Invalid username or password');
+      if (emailrespose) {
+        alert("Email already registered");
         return;
       }
-      AsyncStorage.setItem('loggedInUser', 'true');
-      AsyncStorage.setItem('username', user.username);
-      console.log("Logged in user: " + user.username);
-      navigation.navigate('Home');
+      const user = {
+        username: username,
+        email: email,
+        password: password,
+      };
+      const responseRegister = await axiosInstance.post('/users', user);
+      console.log(responseRegister.data);
+
+
+      console.log("Registered user: " + user.username);
+      alert("Registered successfully, please login");
+      navigation.navigate('Login');
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -100,17 +70,22 @@ const Login = ({ navigation }) => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              
+            />
+            <TextInput
+              style={styles.input}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
             />
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Log In</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.registerButton} onPress={()=>navigation.navigate('Register')}>
-              <Text style={styles.loginButtonText}>Register</Text>
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+              <Text style={styles.registerButtonText}>Register</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -148,14 +123,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#FAFAFA',
   },
-  loginButton: {
+  registerButton: {
     backgroundColor: '#E50914',
     padding: 12,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
   },
-  loginButtonText: {
+  registerButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold'
@@ -165,19 +140,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
-  registerButton: {
-    backgroundColor: '#00f',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  animationContainer: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  }
 });
 
 
