@@ -1,10 +1,13 @@
-import React from 'react';
+import {React, useState, useEffect} from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, ImageBackground, Button } from 'react-native';
 import { connectAxios } from '../lib/axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import YoutubePlayer from 'react-native-youtube-iframe';
+import { TMDB_API_KEY } from '@env'
 
 const MovieDetailScreen = ({ route }) => {
   const { movie } = route.params;
+  const [trailerUrl, setTrailerUrl] = useState(null);
+  const [showTrailer, setShowTrailer] = useState(false);
   
   const handleAddToCart = async() => {
     const axiosInstance = await connectAxios();
@@ -37,13 +40,56 @@ const MovieDetailScreen = ({ route }) => {
     }
   };
 
+  const fetchTrailer = async (movieId) => {
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_API_KEY}&language=en-US`
+      );
+      const data = await response.json();
+      const trailer = data.results.find(
+        (video) => video.type === 'Trailer' && video.site === 'YouTube'
+      );
+      if (trailer) {
+        const youtubeUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
+        setTrailerUrl(youtubeUrl);
+        setShowTrailer(true);
+      } else {
+        console.log('No trailer found');
+      }
+    } catch (error) {
+      console.error('Error fetching trailer:', error);
+    }
+  };
+
+  const getYoutubeVideoId = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url?.match(regExp);
+    return match ? match[2] : null;
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>{movie.title}</Text>
       <Image
         style={styles.poster}
         source={{ uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}` }}
       />
-      <Text style={styles.title}>{movie.title}</Text>
+
+      <Button 
+        title="Watch Trailer" 
+        onPress={() => fetchTrailer(movie.id)} 
+      />
+      
+      {showTrailer && trailerUrl && (
+        <View style={styles.trailerContainer}>
+          <YoutubePlayer
+            height={220}
+            videoId={getYoutubeVideoId(trailerUrl)}
+            play={false}
+          />
+        </View>
+      )}
+
       <Text style={styles.subtitle}>Release Date: {movie.release_date}</Text>
       <Text style={styles.subtitle}>Rating: {movie.vote_average} / 10</Text>
       <Text style={styles.subtitle}>Popularity: {movie.popularity}</Text>
@@ -80,6 +126,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 20,
   },
+  trailerContainer: {
+    width: '100%',
+    marginVertical: 10,
+  },
+  imagebackgroud: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
 
 export default MovieDetailScreen;

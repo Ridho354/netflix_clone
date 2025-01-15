@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, RefreshControl, Button, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, RefreshControl, Button, ImageBackground, Linking } from 'react-native';
 import {connectAxios} from '../lib/axios';
 import midtransClient from 'midtrans-client';
 import {MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY} from '@env';
@@ -34,12 +34,8 @@ const Cart = () => {
       const transactionToken = transaction.token;
       console.log('transactionToken:',transactionToken);
       console.log('https://app.sandbox.midtrans.com/snap/v2/vtweb/'+transactionToken);
-      const url = 'https://app.sandbox.midtrans.com/snap/v2/vtweb/'+transactionToken;
-      redirect(url);
+      Linking.openURL(`https://app.sandbox.midtrans.com/snap/v2/vtweb/${token}`);
     })
-  }
-  const redirect = async(url) => {
-    await Linking.openURL(url);
   }
 
   const coreApi = new midtransClient.CoreApi({
